@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-    MONGO_URI=mongodb://127.0.0.1:27017/threejs_blocks
+    MONGO_URI="mongodb://127.0.0.1:27017/threejs_blocks"
     PORT=3001
     API_URL=http://localhost:3001/api/blocks/batch
     }
