@@ -59,7 +59,7 @@ pipeline {
                     sh '''
                         cd game-project
                         npm install -g vercel
-                        vercel --token ${VERCEL_TOKEN} --prod
+                        vercel --token ${ylh6JC3yIm1UUd3kYylyvbo} --prod
                     '''
                 }
             }
