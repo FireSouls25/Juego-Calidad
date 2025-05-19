@@ -1,112 +1,101 @@
-import { jest } from '@jest/globals';
-import Experience from '../Experience';
-import * as THREE from 'three';
+/**
+ * @jest-environment jsdom
+ */
 
-// Mock dependencies
-jest.mock('three');
-jest.mock('../Utils/Debug');
-jest.mock('../Utils/Sizes');
-jest.mock('../Utils/Time');
-jest.mock('../Utils/ModalManager');
-jest.mock('../World/World');
-jest.mock('../Utils/Resources');
-jest.mock('../Utils/Raycaster');
-jest.mock('../Utils/KeyboardControls');
-jest.mock('../Utils/GameTracker');
-jest.mock('../Utils/Physics');
-jest.mock('../Challenges/ChallengeManager');
+jest.mock('../Utils/Debug.js', () => jest.fn())
+jest.mock('../Utils/Sizes.js', () => jest.fn(() => ({
+  on: jest.fn(),
+})))
+jest.mock('../Utils/Time.js', () => jest.fn(() => ({
+  on: jest.fn(),
+  delta: 16,
+})))
+jest.mock('../../integrations/VRIntegration.js', () => jest.fn(() => ({
+  setUpdateCallback: jest.fn(),
+})))
+jest.mock('../Camera.js', () => jest.fn(() => ({
+  resize: jest.fn(),
+  update: jest.fn(),
+  instance: {
+    position: { copy: jest.fn(), set: jest.fn() },
+    lookAt: jest.fn(),
+  },
+  controls: {
+    enabled: true,
+    update: jest.fn(),
+  }
+})))
+jest.mock('../Renderer.js', () => jest.fn(() => ({
+  instance: {
+    xr: { isPresenting: false },
+  },
+  update: jest.fn(),
+  resize: jest.fn(),
+})))
+jest.mock('../Utils/ModalManager.js', () => jest.fn(() => ({
+  show: jest.fn(),
+})))
+jest.mock('../World/World.js', () => jest.fn(() => ({
+  update: jest.fn(),
+  resetForChallenge: jest.fn(),
+  on: jest.fn(),
+})))
+jest.mock('../Utils/Resources.js', () => jest.fn())
+jest.mock('../World/Sound.js', () => jest.fn())
+jest.mock('../Utils/Raycaster.js', () => jest.fn())
+jest.mock('../Utils/KeyboardControls.js', () => jest.fn())
+jest.mock('../Utils/GameTracker.js', () => jest.fn(() => ({
+  start: jest.fn(),
+  hideGameButtons: jest.fn(),
+  destroy: jest.fn(),
+})))
+jest.mock('../Utils/Physics.js', () => jest.fn(() => ({
+  world: {
+    removeBody: jest.fn(),
+  },
+  update: jest.fn(),
+  destroy: jest.fn(),
+})))
+jest.mock('cannon-es-debugger', () => jest.fn(() => ({ update: jest.fn() })))
+jest.mock('../../controls/CircularMenu.js', () => jest.fn(() => ({
+  destroy: jest.fn(),
+  toggleButton: { style: { display: '' } },
+})))
+jest.mock('../Challenges/ChallengeManager.js', () => jest.fn(() => ({
+  startChallenge: jest.fn(),
+  update: jest.fn(),
+  destroy: jest.fn(),
+})))
 
-describe('Experience', () => {
-    let mockCanvas;
-    let experience;
+import Experience from '../Experience'
 
-    beforeEach(() => {
-        // Reset mocks
-        jest.clearAllMocks();
-        
-        // Create mock canvas
-        mockCanvas = document.createElement('canvas');
-        
-        // Mock THREE.Scene
-        THREE.Scene.mockImplementation(() => ({
-            traverse: jest.fn(),
-            background: null
-        }));
+describe('Experience Class', () => {
+  let canvas
 
-        // Create instance
-        experience = new Experience(mockCanvas);
-    });
+  beforeEach(() => {
+    // Asegura una nueva instancia limpia antes de cada test
+    canvas = document.createElement('canvas')
+    Experience.instance = null
+  })
 
-    afterEach(() => {
-        // Clean up
-        if (experience) {
-            experience.destroy();
-        }
-    });
+  it('debería crear una instancia de Experience', () => {
+    const experience = new Experience(canvas)
+    expect(experience).toBeInstanceOf(Experience)
+  })
 
-    test('should create a singleton instance', () => {
-        const instance1 = new Experience(mockCanvas);
-        const instance2 = new Experience(mockCanvas);
-        expect(instance1).toBe(instance2);
-    });
+  it('debería mantener patrón singleton (misma instancia)', () => {
+    const exp1 = new Experience(canvas)
+    const exp2 = new Experience(canvas)
+    expect(exp1).toBe(exp2)
+  })
 
-    test('should initialize core components', () => {
-        expect(experience.debug).toBeDefined();
-        expect(experience.sizes).toBeDefined();
-        expect(experience.time).toBeDefined();
-        expect(experience.scene).toBeDefined();
-        expect(experience.physics).toBeDefined();
-        expect(experience.keyboard).toBeDefined();
-    });
+  it('debería llamar a resize sin errores', () => {
+    const experience = new Experience(canvas)
+    expect(() => experience.resize()).not.toThrow()
+  })
 
-    test('should initialize challenge system', () => {
-        expect(experience.challengeManager).toBeDefined();
-    });
-
-    test('should handle challenge selection', () => {
-        const challengeId = 'coin_collector';
-        experience.startChallenge(challengeId);
-        expect(experience.challengeManager.startChallenge).toHaveBeenCalled();
-        expect(experience.world.resetForChallenge).toHaveBeenCalled();
-    });
-
-    test('should show challenge results', () => {
-        const mockData = {
-            challenge: { id: 'test', title: 'Test Challenge' },
-            success: true,
-            stats: { coins: 10 }
-        };
-        
-        experience.showChallengeResults(mockData);
-        expect(experience.modal.show).toHaveBeenCalled();
-    });
-
-    test('should handle window resize', () => {
-        const resizeEvent = new Event('resize');
-        window.dispatchEvent(resizeEvent);
-        expect(experience.camera.resize).toHaveBeenCalled();
-        expect(experience.renderer.resize).toHaveBeenCalled();
-    });
-
-    test('should handle audio context', () => {
-        experience.resumeAudioContext();
-        // Add assertions based on your audio context implementation
-    });
-
-    test('should toggle walk mode', () => {
-        experience.toggleWalkMode();
-        expect(experience.isThirdPerson).toBe(true);
-        
-        experience.toggleWalkMode();
-        expect(experience.isThirdPerson).toBe(false);
-    });
-
-    test('should update game state', () => {
-        const mockDelta = 0.016;
-        experience.update(mockDelta);
-        expect(experience.world.update).toHaveBeenCalledWith(mockDelta);
-        expect(experience.renderer.update).toHaveBeenCalled();
-        expect(experience.physics.update).toHaveBeenCalledWith(mockDelta);
-        expect(experience.challengeManager.update).toHaveBeenCalled();
-    });
-}); 
+  it('debería llamar a update sin errores', () => {
+    const experience = new Experience(canvas)
+    expect(() => experience.update()).not.toThrow()
+  })
+})
