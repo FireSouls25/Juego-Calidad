@@ -20,6 +20,7 @@ import CircularMenu from '../controls/CircularMenu.js'
 import { Howler } from 'howler'
 import ChallengeManager from './Challenges/ChallengeManager.js'
 
+// Instancia 
 let instance = null
 
 export default class Experience {
