@@ -44,15 +44,6 @@ pipeline {
             }
         }
 
-        stage('Build Backend') {
-            steps {
-                bat '''
-                    cd backend
-                    npm run build
-                '''
-            }
-        }
-
         stage('Deploy to Vercel') {
             steps {
                 withCredentials([string(credentialsId: 'vercel_token_game', variable: 'Zylh6JC3yIm1UUd3kYylyvbo')]) {
