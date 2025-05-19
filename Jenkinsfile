@@ -16,7 +16,7 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh '''
+                bat '''
                     cd game-project
                     npm install
                     npm install --save-dev jest babel-jest @babel/preset-env @babel/preset-react
@@ -28,7 +28,7 @@ pipeline {
 
         stage('Run Tests') {
             steps {
-                sh '''
+                bat '''
                     cd game-project
                     npm test
                 '''
@@ -37,7 +37,7 @@ pipeline {
 
         stage('Build Frontend') {
             steps {
-                sh '''
+                bat '''
                     cd game-project
                     npm run build
                 '''
@@ -46,7 +46,7 @@ pipeline {
 
         stage('Build Backend') {
             steps {
-                sh '''
+                bat '''
                     cd backend
                     npm run build
                 '''
@@ -56,7 +56,7 @@ pipeline {
         stage('Deploy to Vercel') {
             steps {
                 withCredentials([string(credentialsId: 'vercel_token_game', variable: 'Zylh6JC3yIm1UUd3kYylyvbo')]) {
-                    sh '''
+                    bat '''
                         cd game-project
                         npm install -g vercel
                         vercel --token ${ylh6JC3yIm1UUd3kYylyvbo} --prod
