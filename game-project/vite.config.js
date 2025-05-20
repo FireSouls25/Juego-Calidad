@@ -18,6 +18,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'three', 'cannon-es', 'cannon-es-debugger', 'lil-gui', 'gsap']
-  }
+  },
   base: './',
 })
