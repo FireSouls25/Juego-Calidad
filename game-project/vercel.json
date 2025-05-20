@@ -16,6 +16,6 @@
         }
     ],
     "env": {
-        "VITE_API_URL": "https://your-backend-url.vercel.app"
+        "VITE_API_URL": "http://127.0.0.1:3001"
     }
 } 
